@@ -10,18 +10,18 @@ import 'dart:io' as io;
 class ChromeDesktopDirectoryHelper {
   static const revision = ChromiumInfoConfig.lastRevision;
 
-  static const String appsDirPath = "apps";
+  static const String appsDirPath = "";
 
   static String? assetChromeZipPath() {
     String? filename = zipFileName();
     return appsDirPath.isEmpty
         ? p.joinAll(['assets', '.local-chromium', '${revision}_$filename'])
         : p.joinAll([
-            'assets',
-            appsDirPath,
-            '.local-chromium',
-            '${revision}_$filename'
-          ]);
+          'assets',
+          appsDirPath,
+          '.local-chromium',
+          '${revision}_$filename',
+        ]);
   }
 
   static String zipFileName() {
@@ -43,7 +43,8 @@ class ChromeDesktopDirectoryHelper {
     final targetPath = await applicationSupportPath();
 
     final tagetDirectory = io.Directory(
-        p.joinAll([targetPath, zipFileName().replaceAll(".zip", "")]));
+      p.joinAll([targetPath, zipFileName().replaceAll(".zip", "")]),
+    );
     print("targetPath ${targetPath}");
     print("tagetDirectory ${tagetDirectory.path}");
 
@@ -51,21 +52,27 @@ class ChromeDesktopDirectoryHelper {
     if (!tagetDirectory.existsSync()) {
       tagetDirectory.createSync(recursive: true);
     }
+    var chromeExePath = await getChromeExecutablePath();
+    final executablePath = p.joinAll([targetPath, chromeExePath]);
 
-    final executablePath =
-        p.joinAll([targetPath, await getChromeExecutablePath()]);
+    print("chromeExePath $chromeExePath");
 
-    /// print("targetPath $targetPath");
-    /// print("getExecutablePath $getExecutablePath");
+    print("executablePath $executablePath");
+
     /// print("executablePath $executablePath");
     final executableFile = io.File(executablePath);
 
     /// check zip from asset
     final _assetPath = assetPath ?? assetChromeZipPath();
-    final zipPath = io.Directory(p.joinAll([
-      (await path.getApplicationSupportDirectory()).path,
-      zipFileName()
-    ])).path;
+    final zipPath =
+        io.Directory(
+          p.joinAll([
+            (await path.getApplicationSupportDirectory()).path,
+            zipFileName(),
+          ]),
+        ).path;
+    print("zipPath $zipPath");
+
     final zipFile = io.File(zipPath);
 
     /// if locale chrome not exist
@@ -78,8 +85,10 @@ class ChromeDesktopDirectoryHelper {
         print("assetPath $_assetPath");
 
         final value = await rootBundle.load(_assetPath!);
-        Uint8List wzzip =
-            value.buffer.asUint8List(value.offsetInBytes, value.lengthInBytes);
+        Uint8List wzzip = value.buffer.asUint8List(
+          value.offsetInBytes,
+          value.lengthInBytes,
+        );
         zipFile.writeAsBytesSync(wzzip);
       }
 
@@ -97,8 +106,11 @@ class ChromeDesktopDirectoryHelper {
     if (io.Platform.isMacOS) {
       final chromeAppPath = executableFile.absolute.parent.parent.parent.path;
 
-      await io.Process.run(
-          'xattr', ['-d', 'com.apple.quarantine', chromeAppPath]);
+      await io.Process.run('xattr', [
+        '-d',
+        'com.apple.quarantine',
+        chromeAppPath,
+      ]);
     }
 
     return executableFile.absolute.path;
@@ -113,7 +125,7 @@ class ChromeDesktopDirectoryHelper {
     }
   }
 
-//https://github.com/maxogden/extract-zip/blob/master/index.js
+  //https://github.com/maxogden/extract-zip/blob/master/index.js
   static FutureOr<void> simpleUnzip(String path, String targetPath) {
     var targetDirectory = io.Directory(targetPath);
     if (targetDirectory.existsSync()) {
@@ -138,13 +150,16 @@ class ChromeDesktopDirectoryHelper {
     var supportDir = await path.getApplicationSupportDirectory();
     return appsDirPath.isEmpty
         ? io.Directory(
-                p.joinAll([supportDir.path, '.local-chromium', '$revision']))
-            .absolute
-            .path
-        : io.Directory(p.joinAll(
-                [supportDir.path, appsDirPath, '.local-chromium', '$revision']))
-            .absolute
-            .path;
+          p.joinAll([supportDir.path, '.local-chromium', '$revision']),
+        ).absolute.path
+        : io.Directory(
+          p.joinAll([
+            supportDir.path,
+            appsDirPath,
+            '.local-chromium',
+            '$revision',
+          ]),
+        ).absolute.path;
   }
 
   static FutureOr<String> getChromeExecutablePath() {
@@ -154,7 +169,12 @@ class ChromeDesktopDirectoryHelper {
       return p.join('chrome-linux', 'chrome');
     } else if (io.Platform.isMacOS) {
       return p.join(
-          'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium');
+        'chrome-mac',
+        'Chromium.app',
+        'Contents',
+        'MacOS',
+        'Chromium',
+      );
     } else {
       throw UnsupportedError('Unknown platform ${io.Platform.operatingSystem}');
     }
