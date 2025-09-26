@@ -229,9 +229,12 @@ class WebcontentConverter {
               omitBackground: true,
             );
           } catch (e) {
+            rethrow;
           } finally {
-            await windowBrowserPage!.close();
-            windowBrowserPage = null;
+            if (windowBrowserPage != null) {
+              await windowBrowserPage!.close();
+              windowBrowserPage = null;
+            }
           }
         }
       } else {
