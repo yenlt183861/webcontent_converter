@@ -17,11 +17,11 @@ class ChromeDesktopDirectoryHelper {
     return appsDirPath.isEmpty
         ? p.joinAll(['assets', '.local-chromium', '${revision}_$filename'])
         : p.joinAll([
-          'assets',
-          appsDirPath,
-          '.local-chromium',
-          '${revision}_$filename',
-        ]);
+            'assets',
+            appsDirPath,
+            '.local-chromium',
+            '${revision}_$filename',
+          ]);
   }
 
   static String zipFileName() {
@@ -64,13 +64,12 @@ class ChromeDesktopDirectoryHelper {
 
     /// check zip from asset
     final _assetPath = assetPath ?? assetChromeZipPath();
-    final zipPath =
-        io.Directory(
-          p.joinAll([
-            (await path.getApplicationSupportDirectory()).path,
-            zipFileName(),
-          ]),
-        ).path;
+    final zipPath = io.Directory(
+      p.joinAll([
+        (await path.getApplicationSupportDirectory()).path,
+        zipFileName(),
+      ]),
+    ).path;
     print("zipPath $zipPath");
 
     final zipFile = io.File(zipPath);
@@ -150,21 +149,22 @@ class ChromeDesktopDirectoryHelper {
     var supportDir = await path.getApplicationSupportDirectory();
     return appsDirPath.isEmpty
         ? io.Directory(
-          p.joinAll([supportDir.path, '.local-chromium', '$revision']),
-        ).absolute.path
+            p.joinAll([supportDir.path, '.local-chromium', '$revision']),
+          ).absolute.path
         : io.Directory(
-          p.joinAll([
-            supportDir.path,
-            appsDirPath,
-            '.local-chromium',
-            '$revision',
-          ]),
-        ).absolute.path;
+            p.joinAll([
+              supportDir.path,
+              appsDirPath,
+              '.local-chromium',
+              '$revision',
+            ]),
+          ).absolute.path;
   }
 
   static FutureOr<String> getChromeExecutablePath() {
     if (io.Platform.isWindows) {
-      return p.join('chrome-win', 'chrome.exe');
+      // return p.join('chrome-win', 'chrome.exe');
+      return 'chrome.exe';
     } else if (io.Platform.isLinux) {
       return p.join('chrome-linux', 'chrome');
     } else if (io.Platform.isMacOS) {
