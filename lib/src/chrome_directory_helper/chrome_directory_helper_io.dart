@@ -90,6 +90,7 @@ class ChromeDesktopDirectoryHelper {
         );
         zipFile.writeAsBytesSync(wzzip);
       }
+      print("Write zip size: ${zipFile.lengthSync()} bytes");
 
       await unzip(zipFile.path, targetPath);
     }
@@ -130,19 +131,32 @@ class ChromeDesktopDirectoryHelper {
     if (targetDirectory.existsSync()) {
       targetDirectory.deleteSync(recursive: true);
     }
+    targetDirectory.createSync(recursive: true);
 
     var bytes = io.File(path).readAsBytesSync();
+    print("Zip size: ${bytes.length} bytes");
     var archive = ZipDecoder().decodeBytes(bytes);
 
     for (var file in archive) {
-      var filename = file.name;
-      var data = file.content as List<int>;
-      if (data.isNotEmpty) {
-        io.File(p.join(targetPath, filename))
+      final filename = p.join(targetPath, file.name);
+
+      if (file.isFile) {
+        final data = file.content as List<int>; // hoặc: file.extractBytes()
+        io.File(filename)
           ..createSync(recursive: true)
           ..writeAsBytesSync(data);
+      } else {
+        io.Directory(filename).createSync(recursive: true);
       }
+      // var filename = file.name;
+      // var data = file.content as List<int>;
+      // if (data.isNotEmpty) {
+      //   io.File(p.join(targetPath, filename))
+      //     ..createSync(recursive: true)
+      //     ..writeAsBytesSync(data);
+      // }
     }
+    print("✅ Extracted to: $targetPath");
   }
 
   static FutureOr<String> applicationSupportPath() async {
