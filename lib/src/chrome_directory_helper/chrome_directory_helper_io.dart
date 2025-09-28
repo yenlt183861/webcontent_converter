@@ -131,32 +131,45 @@ class ChromeDesktopDirectoryHelper {
     if (targetDirectory.existsSync()) {
       targetDirectory.deleteSync(recursive: true);
     }
-    targetDirectory.createSync(recursive: true);
-
     var bytes = io.File(path).readAsBytesSync();
-    print("Zip size: ${bytes.length} bytes");
     var archive = ZipDecoder().decodeBytes(bytes);
-
+    print("Zip size: ${bytes.length} bytes");
     for (var file in archive) {
-      final filename = p.join(targetPath, file.name);
-
-      if (file.isFile) {
-        final data = file.content as List<int>; // hoặc: file.extractBytes()
-        io.File(filename)
+      var filename = file.name;
+      var data = file.content as List<int>;
+      if (data.isNotEmpty) {
+        io.File(p.join(targetPath, filename))
           ..createSync(recursive: true)
           ..writeAsBytesSync(data);
-      } else {
-        io.Directory(filename).createSync(recursive: true);
       }
-      // var filename = file.name;
-      // var data = file.content as List<int>;
-      // if (data.isNotEmpty) {
-      //   io.File(p.join(targetPath, filename))
-      //     ..createSync(recursive: true)
-      //     ..writeAsBytesSync(data);
-      // }
     }
     print("✅ Extracted to: $targetPath");
+    // targetDirectory.createSync(recursive: true);
+
+    // var bytes = io.File(path).readAsBytesSync();
+    // print("Zip size: ${bytes.length} bytes");
+    // var archive = ZipDecoder().decodeBytes(bytes);
+
+    // for (var file in archive) {
+    //   final filename = p.join(targetPath, file.name);
+
+    //   if (file.isFile) {
+    //     final data = file.content as List<int>; // hoặc: file.extractBytes()
+    //     io.File(filename)
+    //       ..createSync(recursive: true)
+    //       ..writeAsBytesSync(data);
+    //   } else {
+    //     io.Directory(filename).createSync(recursive: true);
+    //   }
+    //   // var filename = file.name;
+    //   // var data = file.content as List<int>;
+    //   // if (data.isNotEmpty) {
+    //   //   io.File(p.join(targetPath, filename))
+    //   //     ..createSync(recursive: true)
+    //   //     ..writeAsBytesSync(data);
+    //   // }
+    // }
+    // print("✅ Extracted to: $targetPath");
   }
 
   static FutureOr<String> applicationSupportPath() async {
@@ -177,8 +190,7 @@ class ChromeDesktopDirectoryHelper {
 
   static FutureOr<String> getChromeExecutablePath() {
     if (io.Platform.isWindows) {
-      // return p.join('chrome-win', 'chrome.exe');
-      return 'chrome.exe';
+      return p.join('chrome-win', 'chrome.exe');
     } else if (io.Platform.isLinux) {
       return p.join('chrome-linux', 'chrome');
     } else if (io.Platform.isMacOS) {
